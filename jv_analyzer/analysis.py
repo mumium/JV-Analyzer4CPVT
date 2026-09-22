@@ -9,9 +9,6 @@ class ScanResult:
     jsc: Optional[float] = None
     ff: Optional[float] = None
     pce: Optional[float] = None
-    vmpp: Optional[float] = None
-    jmpp: Optional[float] = None
-    pmax: Optional[float] = None
     warnings: list[str] = None
     def to_dict(self): return asdict(self)
 
@@ -55,7 +52,7 @@ def split_scans(v, j, tolerance=1e-12):
     second = ("Forward scan" if direction < 0 else "Reverse scan", v[turn-1:], j[turn-1:])
     return [first, second]
 
-def analyze_scan(name, v, j, area_cm2, incident_mw_cm2=100.0, power_density=None):
+def analyze_scan(name, v, j, area_cm2, incident_mw_cm2=100.0):
     if area_cm2 <= 0 or incident_mw_cm2 <= 0: raise ValueError("Area and incident power must be positive")
     v, j = np.asarray(v, float), np.asarray(j, float)
     warnings = []
@@ -65,31 +62,25 @@ def analyze_scan(name, v, j, area_cm2, incident_mw_cm2=100.0, power_density=None
     if voc is None: warnings.append("Cannot reliably calculate Voc: no J=0 crossing found.")
     valid = np.isfinite(v) & np.isfinite(j)
     if voc is not None: valid &= (v >= 0) & (v <= voc)
-    p = np.asarray(power_density, float) if power_density is not None else v * j
+    # V × mA/cm² = mW/cm². This is the only power value used internally.
+    p = v * j
     valid &= p >= 0
     if not np.any(valid): warnings.append("No valid power-producing region found."); mpp = None
     else:
         k = np.nanargmax(np.where(valid, p, np.nan)); mpp = (float(v[k]), float(j[k]), float(p[k]))
-    vmpp, jmpp, pmax = mpp if mpp else (None, None, None)
+    _, _, pmax = mpp if mpp else (None, None, None)
     ff = (pmax/(voc*jsc)*100) if pmax is not None and voc and jsc else None
     pce = (pmax/incident_mw_cm2*100) if pmax is not None else None
     if voc is not None and voc <= 0: warnings.append("Voc is not positive.")
     if jsc is not None and jsc <= 0: warnings.append("Jsc is not positive after sign correction.")
     if ff is not None and not 0 <= ff <= 100: warnings.append("FF is outside 0–100%.")
-    return ScanResult(name, voc, jsc, ff, pce, vmpp, jmpp, pmax, warnings)
+    return ScanResult(name, voc, jsc, ff, pce, warnings)
 
-def analyze_arrays(v, current_a, area_cm2, multiply_minus_one=True, incident_mw_cm2=100.0, excel_power=None, mpp_method="calculated"):
+def analyze_arrays(v, current_a, area_cm2, multiply_minus_one=True, incident_mw_cm2=100.0):
     current_a = np.asarray(current_a, float)
     corrected = -current_a if multiply_minus_one else current_a
     j = corrected * 1000.0 / area_cm2
     scans = split_scans(v, j)
-    results = []
-    for name, sv, sj in scans:
-        power_density = None
-        if mpp_method == "excel" and excel_power is not None:
-            n = len(sv); start = 0 if not results else len(v) - len(sv)
-            power_density = np.asarray(excel_power[start:start+n], float)
-            if not np.isfinite(power_density).any(): power_density = None
-        results.append(analyze_scan(name, sv, sj, area_cm2, incident_mw_cm2, power_density))
+    results = [analyze_scan(name, sv, sj, area_cm2, incident_mw_cm2) for name, sv, sj in scans]
     return {"voltage": np.asarray(v), "raw_current": current_a, "corrected_current": corrected,
             "current_density": j, "scans": [(n, sv, sj) for n, sv, sj in scans], "results": results}
