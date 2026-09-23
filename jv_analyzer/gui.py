@@ -8,8 +8,8 @@ from .io import analyze_file, export_result, batch_analyze
 
 class App(tk.Tk):
     def __init__(self):
-        super().__init__(); self.title("JV Analyzer"); self.geometry("1280x780"); self.result=None; self.file=None
-        self.vars={k:tk.StringVar(value=v) for k,v in {"start_row":"37","voltage_col":"3","current_col":"5","area_cm2":"0.1","incident_mw_cm2":"100"}.items()}; self.flip=tk.BooleanVar(value=True)
+        super().__init__(); self.title("JV Analyzer"); self.geometry("1080x600"); self.result=None; self.file=None
+        self.vars={k:tk.StringVar(value=v) for k,v in {"start_row":"37","voltage_col":"3","current_col":"4","area_cm2":"0.1","incident_mw_cm2":"100"}.items()}; self.flip=tk.BooleanVar(value=True)
         left=ttk.Frame(self,padding=8); left.pack(side="left",fill="y"); center=ttk.Frame(self); center.pack(side="left",fill="both",expand=True); right=ttk.Frame(self,padding=8); right.pack(side="right",fill="y")
         for label,key in [("File",None),("Start row","start_row"),("Voltage column","voltage_col"),("Current column","current_col"),("Mask area (cm²)","area_cm2"),("Incident power (mW/cm²)","incident_mw_cm2")]:
             ttk.Label(left,text=label).pack(anchor="w",pady=(5,0))
