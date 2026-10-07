@@ -1,5 +1,7 @@
 # JV Analyzer
 
+<img src="assets/logo.png" width="96" alt="JV Analyzer 图标">
+
 离线分析钙钛矿太阳能电池 JV 数据。默认从第 37 行读取，第 3 列为电压、第 5 列为电流，电流默认乘以 -1。程序不读取 Excel 功率列。
 
 ## 运行
