@@ -28,6 +28,8 @@ GUI 支持 Excel 选择、列/行配置、mask 面积、入射光功率、正反
 
 ## 源码部署与打包
 
+v1.0.1 优化了任务栏图标：图标从矢量源直接生成 16–256 像素共 12 档尺寸，小图标使用简化细节和加粗曲线；Windows 根据显示 DPI 分别加载标题栏和任务栏图标，并使用固定应用标识。可在常见的 100%、125%、150%、175%、200% 显示缩放下选择对应尺寸。
+
 以下步骤仅供开发或自行构建，使用单文件版无需执行。
 
 本次发布使用 Windows x64 / Python 3.13 构建；完整构建依赖版本记录在 `requirements-build.txt`。
@@ -54,3 +56,5 @@ Get-Content .\self-test.json
 ```
 
 自检覆盖窗口及图标加载、Excel 读取、正反扫参数、结果显示、PNG/SVG 保存、Excel 导出回读和批量分析。`"ok": true` 表示全部通过。
+
+图标矢量源为 `assets/logo.svg` 和 `assets/logo-small.svg`。修改图标后，在安装了 Node.js 和 `sharp` 的开发环境运行 `node packaging/generate_icons.cjs`，再重新打包。此依赖仅用于生成图标，运行 exe 无需 Node.js。

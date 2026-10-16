@@ -7,9 +7,11 @@ import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from .io import analyze_file, export_result, batch_analyze
+from .windows import configure_process, set_window_icons
 
 class App(tk.Tk):
     def __init__(self):
+        configure_process()
         super().__init__()
         self.title("JV Analyzer")
         screen_width, screen_height = self.winfo_screenwidth(), self.winfo_screenheight()
@@ -22,8 +24,6 @@ class App(tk.Tk):
         assets = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent.parent)) / "assets"
         self._app_icon = tk.PhotoImage(file=str(assets / "logo.png"))
         self.iconphoto(True, self._app_icon)
-        if sys.platform == "win32":
-            self.iconbitmap(str(assets / "logo.ico"))
         self.vars={k:tk.StringVar(value=v) for k,v in {"start_row":"37","voltage_col":"3","current_col":"4","area_cm2":"0.1","incident_mw_cm2":"100"}.items()}; self.flip=tk.BooleanVar(value=True)
         # Reserve the status row before allocating space to the main content.
         self.rowconfigure(0, weight=1)
@@ -111,6 +111,7 @@ class App(tk.Tk):
         self.bind("<Button-4>", self._scroll_settings, add="+")
         self.bind("<Button-5>", self._scroll_settings, add="+")
         self._apply_layout(width)
+        set_window_icons(self, assets / "logo.ico")
 
     def _schedule_layout(self, event):
         if event.widget is not self:
@@ -142,6 +143,10 @@ class App(tk.Tk):
             self.notebook.add(self.results_panel, text="Results")
         if selected in self.notebook.tabs():
             self.notebook.select(selected)
+        # Notebook pages are siblings so they can also move into the grid.
+        # Keep them above the notebook's background in the native window stack.
+        for panel in (self.settings_panel, self.plot_panel, self.results_panel):
+            panel.lift(self.notebook)
         self._layout_mode = mode
         self.canvas.draw_idle()
 

@@ -1,6 +1,7 @@
 """Layout regressions; require a desktop display (skip on headless systems)."""
 
 import tkinter as tk
+import sys
 from types import SimpleNamespace
 
 import pytest
@@ -40,6 +41,8 @@ def assert_visible_inside(widget, parent):
 @pytest.mark.parametrize("width,height", [(1024, 600), (800, 600), (640, 480), (560, 360)])
 def test_small_windows_keep_plot_toolbar_results_and_status_accessible(app, width, height):
     resize(app, width, height)
+    siblings = app.workspace.winfo_children()
+    assert siblings.index(app.plot_panel) > siblings.index(app.notebook)
     assert_visible_inside(app.plot_panel, app)
     assert_visible_inside(app.toolbar, app)
     for button in app.toolbar._buttons.values():
@@ -85,3 +88,19 @@ def test_short_window_can_scroll_to_last_settings_action(app):
     save_button = next(widget for widget in app.settings_content.winfo_children()
                        if widget.cget("text") == "Save plot")
     assert_visible_inside(save_button, canvas)
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows taskbar icons")
+def test_native_window_has_small_and_taskbar_icons(app):
+    import ctypes
+    from ctypes import wintypes
+
+    user32 = ctypes.WinDLL("user32")
+    user32.GetAncestor.argtypes = [wintypes.HWND, wintypes.UINT]
+    user32.GetAncestor.restype = wintypes.HWND
+    user32.SendMessageW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
+    user32.SendMessageW.restype = ctypes.c_ssize_t
+    hwnd = user32.GetAncestor(app.winfo_id(), 2)
+    small = user32.SendMessageW(hwnd, 0x7F, 0, 0)  # WM_GETICON
+    large = user32.SendMessageW(hwnd, 0x7F, 1, 0)
+    assert small and large and small != large

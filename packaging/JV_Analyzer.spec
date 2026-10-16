@@ -29,4 +29,5 @@ exe = EXE(
     strip=False,
     upx=False,
     icon=str(root / "assets" / "logo.ico"),
+    version=str(root / "packaging" / "version_info.txt"),
 )
