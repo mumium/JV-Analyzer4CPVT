@@ -22,8 +22,11 @@ class App(tk.Tk):
         self.result = None
         self.file = None
         assets = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent.parent)) / "assets"
-        self._app_icon = tk.PhotoImage(file=str(assets / "logo.png"))
-        self.iconphoto(True, self._app_icon)
+        if sys.platform == "win32":
+            self.iconbitmap(default=str(assets / "logo.ico"))
+        else:
+            self._app_icon = tk.PhotoImage(file=str(assets / "logo-window.png"))
+            self.iconphoto(True, self._app_icon)
         self.vars={k:tk.StringVar(value=v) for k,v in {"start_row":"37","voltage_col":"3","current_col":"4","area_cm2":"0.1","incident_mw_cm2":"100"}.items()}; self.flip=tk.BooleanVar(value=True)
         # Reserve the status row before allocating space to the main content.
         self.rowconfigure(0, weight=1)

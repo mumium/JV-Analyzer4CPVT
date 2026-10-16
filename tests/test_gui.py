@@ -104,3 +104,5 @@ def test_native_window_has_small_and_taskbar_icons(app):
     small = user32.SendMessageW(hwnd, 0x7F, 0, 0)  # WM_GETICON
     large = user32.SendMessageW(hwnd, 0x7F, 1, 0)
     assert small and large and small != large
+    from jv_analyzer.windows import taskbar_icon_size
+    assert taskbar_icon_size(app) == (256, 256)

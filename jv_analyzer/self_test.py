@@ -16,8 +16,14 @@ def run(report_path):
         from .io import analyze_file, batch_analyze, export_result
 
         app = App()
-        app.withdraw()
         app.update()
+        from .windows import taskbar_icon_size
+        icon_size = taskbar_icon_size(app)
+        if icon_size is not None:
+            if icon_size != (256, 256):
+                raise AssertionError(f"Taskbar ICON_BIG must be 256 px, got {icon_size}")
+            report["taskbar_icon_size"] = list(icon_size)
+        app.withdraw()
         report["checks"].append("GUI, TkAgg backend and bundled icons")
         settings = app.settings()
         with TemporaryDirectory(prefix="jv-offline-test-") as folder:
