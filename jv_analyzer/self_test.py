@@ -17,6 +17,7 @@ def run(report_path):
 
         app = App()
         app.update()
+        report["window_title"] = app.title()
         from .windows import taskbar_icon_size
         icon_size = taskbar_icon_size(app)
         if icon_size is not None:

@@ -13,7 +13,7 @@ class App(tk.Tk):
     def __init__(self):
         configure_process()
         super().__init__()
-        self.title("JV Analyzer")
+        self.title("JV Analyzer · MK Design")
         screen_width, screen_height = self.winfo_screenwidth(), self.winfo_screenheight()
         width = min(1200, max(320, screen_width - 80))
         height = min(740, max(240, screen_height - 100))
